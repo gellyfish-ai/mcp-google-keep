@@ -1,0 +1,12 @@
+services:
+  mcp-google-keep:
+    build: .
+    ports:
+      - "8204:8204"
+    env_file:
+      - .env
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8204
+      - MCP_TRANSPORT=sse
+    restart: unless-stopped
