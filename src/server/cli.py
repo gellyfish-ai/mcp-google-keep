@@ -51,6 +51,15 @@ def _normalize_colors(colors: list[str] | None):
 
 
 @mcp.tool()
+def resync() -> str:
+    """Force a full resync of all notes from Google Keep. Use this after sharing new notes with the account or when notes appear to be missing."""
+    keep = get_client()
+    keep.sync(resync=True)
+    count = len(list(keep.all()))
+    return json.dumps({"message": f"Full resync complete. {count} note(s) now visible."})
+
+
+@mcp.tool()
 def find(
     query: str = "",
     labels: list[str] | None = None,
@@ -61,6 +70,7 @@ def find(
 ) -> str:
     """Find notes using text and optional filters. labels should be label IDs. colors should be ColorValue strings (e.g. DEFAULT, RED, CERULEAN)."""
     keep = get_client()
+    keep.sync()
     normalized_colors = _normalize_colors(colors)
     notes = keep.find(
         query=query,
@@ -78,7 +88,11 @@ def find(
 @mcp.tool()
 def get_note(note_id: str) -> str:
     """Get a note by ID."""
-    _, note = _get_note_or_raise(note_id)
+    keep = get_client()
+    keep.sync()
+    note = keep.get(note_id)
+    if not note:
+        raise ValueError(f"Note with ID {note_id} not found")
     return json.dumps(serialize_note(note))
 
 
