@@ -1,12 +1,19 @@
 services:
   mcp-google-keep:
     build: .
+    container_name: mcp-google-keep
     ports:
-      - "8204:8204"
-    env_file:
-      - .env
+      - "127.0.0.1:8204:8204"
+    volumes:
+      - ${CREDENTIALS_FILE:-~/.config/gellyfish/google-keep.env}:/run/secrets/credentials.env:ro
     environment:
       - HOST=0.0.0.0
       - PORT=8204
       - MCP_TRANSPORT=sse
-    restart: unless-stopped
+      - CREDENTIALS_FILE=/run/secrets/credentials.env
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
